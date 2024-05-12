@@ -450,7 +450,7 @@ def upload_file():
     image = Image2.open(url)
     print("Image:", image)
 
-    texts = [["a photo of a person", "a person", "a human", "a human being"]]
+    texts = [["a photo of a person"]]
     inputs = processor(text=texts, images=image, return_tensors="pt")
     outputs = model(**inputs)
     target_sizes = torch.tensor([image.size[::-1]])
@@ -458,7 +458,7 @@ def upload_file():
         outputs=outputs, target_sizes=target_sizes, threshold=0.1
     )
     descriptions = []
-
+    print("segment length:",len(results[0]["boxes"]))
     for i, result in enumerate(results[0]["boxes"]):
         xmin, ymin, xmax, ymax = map(int, result.tolist())
         person_image = image.crop((xmin, ymin, xmax, ymax))
@@ -632,6 +632,7 @@ def upload_file():
     print("Reached here")
 
     rules_guide = response.choices[0].message.content
+    print("rules guide:", rules_guide)
     data = json.loads(rules_guide)
     # print(data)
 
@@ -664,9 +665,10 @@ def upload_file():
         content.append(Paragraph("\n", content_style))
 
     # Character Portraits
-    for c in characters:
+    for index, c in enumerate(characters):
         img_url = c["image_url"]
-        new_img_url = save_image_url_as_file("char_img.jpg", img_url)
+        filename = f"char_img_{index}.jpg"
+        new_img_url = save_image_url_as_file(filename, img_url)
         image = Image(new_img_url, width=200, height=200)  # drawing on the pdf canvas
         content.append(image)
         content.append(Paragraph("\n", content_style))
